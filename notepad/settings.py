@@ -59,7 +59,7 @@ try:
             DATABASES['default']['ENGINE'] = 'django.db.backends.mysql'
 			
         TEMPLATE_DIRS = (os.path.abspath('./notepad/templates'),)
-        MEDIA_ROOT =  os.path.abspath('./notepad/static/')
+        #MEDIA_ROOT =  os.path.abspath('./notepad/static/')
 except Exception:
     print 'Unexpected error:', sys.exc_info()
 
