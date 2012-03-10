@@ -33,8 +33,8 @@
 
 <script src="/static/src/mode-lua.js" type="text/javascript" charset="utf-8"></script>
 
-<script type="text/javascript" src="/static/js/lua.js"></script>
-<script type="text/javascript" src="/static/js/console.js"></script>
+<!--<script type="text/javascript" src="/static/js/xlua.js"></script>-->
+<!--<script type="text/javascript" src="/static/js/console.js"></script>-->
 
 <script>
     {% autoescape off %}
@@ -356,12 +356,6 @@
             window.open('http://www.wolframalpha.com/input/?i='+escape(input));
         });
 
-        $('#edit').children().click(function(){
-            console.log('yay');
-            $('#edit').fadeIn('fast');
-            $("#view").fadeTo('fast',0.6);
-        });
-
         // $('.ace_latex').hover(function(){
         // // in between
         // console.log(this);
@@ -401,6 +395,7 @@
     }
     one_height = null;
     JavaScriptMode = require("ace/mode/markdown").Mode;
+	
     function addToAcesArray(pid){
         $("<div id='"+pid+"' style='min-height: 20px; min-width: 500px' class='editor'></div>").insertAfter(previous);
         //document.getElementById(pid).focus();
@@ -424,7 +419,7 @@
         aces[''+pid]=temp;
         temp.getSession().setUseWrapMode(true);
 
-
+		//var buffer = [];
         temp.getSession().on('change', function(){
             var txt = temp.getSession().getValue();
             var lines = temp.session.doc.$lines;
@@ -444,14 +439,15 @@
                 data.push([parseInt(editor.container.id), editor.session.getValue(), 0]);
             });
 
+			//
+			
             viewUpdate(data);
 
             if (!dont_update){
                 console.log('began update');
                 $.post(baseUrl+"/update/"+uid+"/"+temp.container.id+'/', {text:txt, code:0},
                  function(data){
-                 //alert(data);
-                     //console.log(data);
+				 
                  },"json");
             }
         });
@@ -535,7 +531,7 @@
     }
 
     function startPolling(){
-        var ticker = setInterval(doPoll, 3000);
+        var ticker = setInterval(doPoll, 5000);
     }
 
     $(document).ready( function() {
@@ -551,7 +547,7 @@
             addCell();
         }
 
-        startPolling();
+        //startPolling();
 
         // document.onkeypress=function(event){
         // var keyCode = ('which' in event) ? event.which : event.keyCode;
@@ -580,6 +576,14 @@
         z-index: 99;
         background:#fff;
         opacity:0.8;
+    }
+
+    #demo{
+        font-size: 200%;
+    }
+
+    #view {
+
     }
 
     #latex-context2{
@@ -681,14 +685,14 @@
 
 
 </head>
-
+<!--
 <div id="console" class="prefix1">
     <div id="editor"></div>
 
     <div id="interpreter"></div>
     <div id="run"> RUN </div>
 </div>
-
+-->
 <div id="arrow"></div>
 <div id="intro"><span id="logo">omnipad</span></div>
 <div id="content">

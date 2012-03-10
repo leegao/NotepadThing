@@ -14376,9 +14376,9 @@ exports.cssText = ".ace-tm .ace_editor {\
 }\
 \
 .ace-tm .ace_marker-layer .ace_active_line {\
-  background: rgba(0, 154, 192, 0.1);\
-  padding:2px;\
-  box-shadow: 0 0 3px rgba(0, 154, 192, 0.1); \
+  background: rgba(0, 154, 192, 0.04);\
+  -padding:2px;\
+  -box-shadow: 0 0 3px rgba(0, 154, 192, 0.1); \
 }\
 \
 .ace-tm .ace_marker-layer .ace_selected_word {\
