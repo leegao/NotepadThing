@@ -143,7 +143,7 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'notepad.urls'
 
-TEMPLATE_DIRS = ('C:/Users/Lee/PycharmProjects/notepad/templates',)
+TEMPLATE_DIRS = (os.path.abspath('./templates'),)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
