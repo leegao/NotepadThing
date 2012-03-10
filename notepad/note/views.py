@@ -9,7 +9,7 @@ import datetime
 
 @csrf_exempt
 def page(request, uid):
-    initial_data = Cell.objects.filter(document__id = uid)
+    initial_data = Cell.objects.filter(document__id = uid).order_by('id')
     if not initial_data:
         # create uid
         doc = Document(id=uid)
@@ -22,7 +22,7 @@ def page(request, uid):
 @csrf_exempt
 def index(request):
     uid = 1
-    initial_data = Cell.objects.filter(document__id = uid)
+    initial_data = Cell.objects.filter(document__id = uid).order_by('id')
     initial_data = json.dumps([[dat.pid(),dat.raw_text, 0] for dat in initial_data])
     return render_to_response('template.html', locals())
 
