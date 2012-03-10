@@ -4,9 +4,14 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse
 from models import *
 import json
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
 def index(request):
-    return render_to_response('template.html')
+    uid = 1
+    initial_data = Cell.objects.filter(document__id = uid)
+    initial_data = json.dumps([[dat.pid(),dat.raw_text, 0] for dat in initial_data])
+    return render_to_response('template.html', locals())
 
 def get(request, uid):
     # return the full text in json
@@ -18,6 +23,7 @@ def get(request, uid):
         # idk
         return HttpResponse(json.dumps(None))
 
+@csrf_exempt
 def update(request, uid, pid):
     # take POST data
     doc = Document.objects.filter(id = uid)

@@ -1,9 +1,9 @@
 from django.conf.urls.defaults import patterns, include, url
-
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
-
+import os
 urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'notepad.views.home', name='home'),
@@ -20,3 +20,9 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
 )
+
+urlpatterns += patterns('django.views.static',
+    (r'^static/(?P<path>.*)$',
+     'serve', {
+        'document_root': os.path.abspath('./static/'),
+        'show_indexes': True }),)

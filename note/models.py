@@ -13,7 +13,7 @@ class Document(models.Model):
     def cells(self):
         l = []
         for cell in Cell.objects.filter(document=self):
-            l.append((cell.raw_text, cell.code))
+            l.append((cell.pid(), cell.raw_text, cell.code))
         return l
 
 class Cell(models.Model):
