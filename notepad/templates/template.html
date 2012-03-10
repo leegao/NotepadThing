@@ -1,0 +1,870 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US" xml:lang="en-US">
+<head>
+<title>omnipad</title>
+
+<link rel="stylesheet" type="text/css" href="/static/css/styles.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/peculiar.css" />
+<link href="/static/prettify/prettify.css" type="text/css" rel="stylesheet" />
+<link rel="stylesheet" href="/static/css/jquery.ui.all.css">
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/showdown.js"></script>
+<script type="text/javascript" src="/static/js/anthony.js"></script>
+<script src="/static/ace/build/src/ace-uncompressed.js" type="text/javascript" charset="utf-8"></script>
+
+<script src="/static/js/jquery-1.7.1.js"></script>
+<script src="/static/js/jquery.ui.core.js"></script>
+<script src="/static/js/jquery.ui.widget.js"></script>
+<script src="/static/js/jquery.ui.mouse.js"></script>
+<script src="/static/js/jquery.ui.draggable.js"></script>
+
+<script type="text/javascript" src="/static/prettify/prettify.js"></script>
+
+
+<script src="/static/src/ace-uncompressed.js" type="text/javascript" charset="utf-8"></script>
+<!--<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>-->
+<script src="/static/src/mode-markdown-uncompressed.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/src/mode-latex-uncompressed.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<script src="/static/js/jquery.terminal-0.4.7.js" type="text/javascript" charset="utf-8"></script>
+<link type="text/css" rel="stylesheet" href="/static/css/jquery.terminal.css"/>
+
+<script src="/static/src/mode-lua.js" type="text/javascript" charset="utf-8"></script>
+
+<script type="text/javascript" src="/static/js/lua.js"></script>
+<script type="text/javascript" src="/static/js/console.js"></script>
+
+<script>
+    {% autoescape off %}
+        initial_data = {{initial_data}}
+    {% endautoescape %}
+
+</script>
+
+<script>
+    url = 'http://webdemo.visionobjects.com/api/myscript/v1.0/equation/recognize.json';
+    data_template = {'application': 'webdemo.equation', 'instancUUID': 'FCAECDF6-56BA-4C56-B611-2B4AAA2DF713'};
+    latex = null;
+    function whatis(d, fn){
+        var post = {'application':data_template['application'], 'instancUUID':data_template['instancUUID'], 'value':d};
+        if (d != false){
+            $.ajax({
+                type:'POST',
+                url:url,
+                data:{'equationInput':JSON.stringify(post).replace(/ /g,'')},
+                dataType:'json',
+                success:function(data){
+                    console.log(typeof data);
+                    latex = data['latexResult'];
+
+                    if (latex != null){
+                        $('.eq #demo').text('\\['+latex+'\\]');
+                        //latex = null;
+                        MathJax.Hub.Queue(["Typeset",MathJax.Hub,"demo"]);
+
+                    }
+                }
+            });
+        }
+    }
+
+    function getPosition(e) {
+
+        //this section is from http://www.quirksmode.org/js/events_properties.html
+        var targ;
+        if (!e)
+            e = window.event;
+        if (e.target)
+            targ = e.target;
+        else if (e.srcElement)
+            targ = e.srcElement;
+        if (targ.nodeType == 3) // defeat Safari bug
+            targ = targ.parentNode;
+
+        // jQuery normalizes the pageX and pageY
+        // pageX,Y are the mouse positions relative to the document
+        // offset() returns the position of the element relative to the document
+        var x = e.pageX - $(targ).offset().left;
+        var y = e.pageY - $(targ).offset().top;
+
+        return {"x": x, "y": y};
+    };
+
+    md = false;
+    strokes = [];
+    current = {};
+    curwebeq = null;
+    $(document).ready(function(){
+		toggle = true;
+		
+		$('#bottom').click(function(){
+			doPoll();
+		});
+		
+		
+		
+		$('#view').click(function(){
+			
+			if (toggle){
+				$(this).animate({left:'95%',opacity:'0.2'});
+				$('#edit').animate({width:'90%'});
+				$('.editor').css('width','95%');
+				$.each(editors, function(_,e){
+					e.resize($(e.container).width(), $(e.container).height());
+				});
+			} else {
+				$(this).animate({left:'50%',opacity:'0.9'});
+				$('#edit').animate({width:'45%'});
+				$('.editor').css('width','95%');
+				
+				var data = [];
+				$.each(editors, function(_,editor){
+					data.push([parseInt(editor.container.id), editor.session.getValue(), 0]);
+				});
+				viewUpdate(data);
+				
+			}
+			
+			
+			toggle = ! toggle;
+		});
+	
+        ctx = null;
+        $('.webeq').each(function(){
+            console.log(this);
+            this.width = $(this).width();
+            this.height = $(this).height();
+        });
+        $('.webeq').mousedown(function(event){
+            md = true;
+            if(active != null)
+                active.blur();
+            ctx = this.getContext('2d');
+            //ctx.save();
+            current = {'x':[],'y':[]};
+            var pos = getPosition(event);
+            ctx.beginPath();
+            ctx.strokeStyle = "blue";
+            ctx.lineWidth = 2;
+            ctx.moveTo(pos['x'] , pos['y']);
+            this.focus();
+            curwebeq = this;
+        }).mouseup(function(){
+                    md = false;
+                    strokes.push(current);
+                    //ctx = null;
+                    redostack = [];
+                    whatis(strokes, function(data){});
+                }).mousemove(
+                function(event){
+                    var pos = getPosition(event);
+                    var x = pos['x'] ;
+                    var y = pos['y'];
+
+                    if (md){
+                        current['x'].push(x);
+                        current['y'].push(y);
+                        ctx.lineTo(x, y);
+                        ctx.stroke();
+                        //console.log(x,y);
+                    }
+                }
+        )
+
+        redostack = [];
+
+        $(document).keydown(function(event){
+
+            if (event.keyCode==13&&event.ctrlKey){
+                addCell();
+                // focus on latest pid
+                var pid = previous.substr(1);
+                var editor = aces[pid];
+                editor.focus();
+                active = editor;
+            }
+			if (event.ctrlKey && event.keyCode == 73){
+				// toggles the webtex
+				$('.webtex').toggle();
+			}
+            if (event.ctrlKey && event.keyCode == 90){
+                console.log("undo");
+                if (curwebeq != null){
+                    // undo one
+                    var last = strokes.pop();
+                    redostack.push(last);
+                    // trace over with white
+                    ctx = curwebeq.getContext('2d');
+                    ctx.clearRect(0, 0, 1000, 1000);
+
+                    for (j=0;j<strokes.length;j++){
+                        var last = strokes[j];
+                        ctx.beginPath();
+                        //ctx.strokeStyle = "white";
+                        //ctx.lineWidth = 3;
+                        var x = last['x'][0];
+                        var y = last['y'][0];
+                        ctx.moveTo(x, y);
+                        var i = 1;
+                        while (i < last['x'].length){
+                            ctx.lineTo(last['x'][i], last['y'][i]);
+                            i++;
+                        }
+                        ctx.stroke();
+                        $(".webeq")[0].focus();
+                    }
+
+                    whatis(strokes, function(data){});
+
+                }
+            } else if (event.ctrlKey && event.keyCode == 89){
+                console.log("redo");
+
+
+                if (curwebeq != null){
+                    if (redostack.length > 0){
+                        // redo one
+                        var last = redostack.pop();
+                        strokes.push(last);
+                        // trace over with white
+                        ctx = curwebeq.getContext('2d');
+                        ctx.clearRect(0, 0, 1000, 1000);
+
+                        for (j=0;j<strokes.length;j++){
+                            var last = strokes[j];
+                            ctx.beginPath();
+                            //ctx.strokeStyle = "white";
+                            //ctx.lineWidth = 3;
+                            var x = last['x'][0];
+                            var y = last['y'][0];
+                            ctx.moveTo(x, y);
+                            var i = 1;
+                            while (i < last['x'].length){
+                                ctx.lineTo(last['x'][i], last['y'][i]);
+                                i++;
+                            }
+                            ctx.stroke();
+                        }
+
+                        whatis(strokes, function(data){});
+                    }
+                }
+            }
+        });
+
+    });
+</script>
+
+<script type="text/javascript">
+		ctx2 = null;
+		strokes2 = [];
+		$(document).ready(function(){
+			$('.webtex').each(function(){
+				this.width = $(this).width();
+				this.height = $(this).height();
+			});
+			$('.webtex').mousedown(function(event){
+				md2 = true;
+				if(active != null)
+					active.blur();
+				ctx2 = this.getContext('2d');
+				//ctx.save();
+				current2 = {'x':[],'y':[]};
+				var pos = getPosition(event);
+				ctx2.beginPath();
+				ctx2.strokeStyle = "blue";
+				ctx2.lineWidth = 2;
+				ctx2.moveTo(pos['x'] , pos['y']);
+				this.focus();
+			}).mouseup(function(){
+						md2 = false;
+						strokes2.push(current2);
+						//ctx = null;
+						whatis2(strokes2, function(data){});
+					}).mousemove(
+					function(event){
+						var pos = getPosition(event);
+						var x = pos['x'] ;
+						var y = pos['y'];
+
+						if (md2){
+							current2['x'].push(x);
+							current2['y'].push(y);
+							ctx2.lineTo(x, y);
+							ctx2.stroke();
+							//console.log(x,y);
+						}
+					}
+			);
+		});
+
+
+</script>
+
+<script type="text/javascript">
+    editors = [];
+    editors_map = {};
+    editors_pid = {};
+    active = null;
+    $(document).ready(function(){
+        init_editors = (function(editor, dom){
+            //cur = ace.edit(editor);
+            var cur = editor;
+            editors.push(cur);
+            editors_map[cur] = dom;
+            cur.getSession().on('change', function(x){
+                //console.log(x);
+                var curX = cur.getSession().selection.selectionLead.column;
+                var curY = cur.getSession().selection.selectionLead.row;
+
+                if (cur == active){
+                    $(".latex-context").css("display","none");
+                    $("#latex-context2").css("display","none");
+                }
+
+
+                var doc = cur.getSession().doc.$lines;
+                if (x.data.text == '$'){
+                    // we want '$$'
+                    var lastX = curX-1;
+                    if (lastX >= 0 && doc[curY][lastX] == '$'){
+                        cur.getSession().insert(cur.getSession().getSelection().getCursor(),'$$');
+                        cur.getSession().getSelection().moveCursorTo(curY, curX);
+
+                        // pop up context and ask for input
+                        // find a near point
+                        var text = $(editors_map[cur]).find(".ace_cursor");
+                        var pos = text.offset();
+                        pos['top'] -= 25;
+                        if (pos['top']<0){
+                            pos['top'] = 20;
+                        }
+                        pos['left'] += 10;
+                        if (pos['left']<0){
+                            pos['left'] = 20;
+                        }
+
+                        // create a new div near pos
+                        //$("body").append("<div class='latex-context'>EQ</div>");
+
+                        $(".latex-context").css(pos).fadeIn().click(function(){
+                            $(".latex-context").hide();
+                            console.log(pos);
+                            $(".eq").show().css(pos);
+                            $(".webeq").css("top","20px");
+                        });
+                    }
+                }
+            });
+
+            cur.getSession().getSelection().on('changeSelection', function(){
+                var sel = cur.getSession().doc.getTextRange(cur.getSelectionRange());
+                $("#latex-context2").css("display","none");
+                if (sel.match(/^\$\$.*\$\$$/)){
+                    console.log(sel);
+                    // pop up context
+                    var text = $(editors_map[cur]).find(".ace_cursor");
+                    var pos = text.offset();
+                    pos['top'] += 10;
+                    if (pos['top']<0){
+                        pos['top'] = 20;
+                    }
+                    pos['left'] += 10;
+                    if (pos['left']<0){
+                        pos['left'] = 20;
+                    }
+                    $("#latex-context2").show().text(sel).css(pos);
+                    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"latex-context2"]);
+                }
+            });
+
+            cur.getSession().getSelection().on('changeCursor', function(){
+                var curX = cur.getSession().selection.selectionLead.column;
+                var curY = cur.getSession().selection.selectionLead.row;
+                var doc = cur.getSession().doc.$lines;
+                if (cur == active){
+                    if (doc[curY][curX] != '$' && $(".latex-context").css('display') != 'none'){
+                        $(".latex-context").fadeOut();
+                    }
+                }
+
+            });
+
+            // cur.commands.addCommand({
+            // name: 'myCommand',
+            // bindKey: {
+            // win: 'Ctrl-M',
+            // mac: 'Command-M'
+            // },
+            // exec: function(env, args, request) {
+            // var pos = cur.getSession().getSelection().getCursor();
+            // cur.getSession().insert(cur.getSession().getSelection().getCursor(),'$$$$');
+            // pos['column'] += 2;
+            // cur.getSession().selection.setSelectionAnchor(pos);
+            // //cur.getSession().selection.moveCursorTo(pos);
+            // }
+            // });
+
+            $(cur).click(function(){
+                active = cur;
+                cur.setHighlightActiveLine(true);
+            });
+
+            $(cur).blur(function(){
+                cur.setHighlightActiveLine(false);
+            });
+        });
+
+        // JavaScriptMode = require("ace/mode/markdown").Mode;
+        // for (i=0;i<editors.length;i++){
+        // editors[i].getSession().setMode(new JavaScriptMode());
+        // }
+
+        $('.cancel').click(function(){
+            $('.eq').hide();
+            if (latex){
+                console.log(latex);
+                active.getSession().insert(active.getSession().getSelection().getCursor(),latex);
+            }
+            //latex = null;
+            ctx.clearRect(0, 0, 1000, 1000);
+            strokes = [];
+            redostack = [];
+        });
+
+        $("#latex-context2").click(function(){
+            var input = ($(this).find("script").text());
+            window.open('http://www.wolframalpha.com/input/?i='+escape(input));
+        });
+
+        // $('.ace_latex').hover(function(){
+        // // in between
+        // console.log(this);
+        // });
+    });
+
+
+</script>
+
+<script>
+    var baseUrl = "";
+    var uid = {{ uid }};
+    var aces = {};
+    var previous = "#top";
+    dont_update = false;
+//
+//    var gpid = 1;
+//    function fake_pid(){
+//        return gpid++;
+//    }
+
+    function addCell(){
+//This adds a cell
+        $.ajax({
+         type: 'POST',
+         url:baseUrl+"/update/"+uid+"/0/",
+         data:{text:"", code:0},
+         success: function(data){
+             //alert("success");
+             addToAcesArray(data);
+         },
+         fail: function(data, d2){alert(d2);},
+         dataType:'json'
+         });
+        //addToAcesArray(fake_pid());
+    }
+    one_height = null;
+    JavaScriptMode = require("ace/mode/markdown").Mode;
+	
+    function addToAcesArray(pid){
+        $("<div id='"+pid+"' style='min-height: 20px; min-width: 500px' class='editor'></div>").insertAfter(previous);
+        //document.getElementById(pid).focus();
+        previous = "#"+pid;
+        if (one_height == null){
+            one_height = $(previous).height()+2;
+        }
+        //console.log(pid);
+
+        var temp = ace.edit(pid+"");
+		if(active){
+			active.focus();
+		}
+        //active = temp;
+        init_editors(temp, $(previous)[0]);
+        $(previous).children().css("overflow-y","hidden");
+        //$(previous)[0].style.fontSize='15px';
+        //temp.setFontSize('15px');
+        $(previous)[0].style.fontFamily = 'Courier';
+
+        temp.getSession().setMode(new JavaScriptMode());
+        aces[pid]=temp;
+        aces[''+pid]=temp;
+        temp.getSession().setUseWrapMode(true);
+
+		//var buffer = [];
+        temp.getSession().on('change', function(){
+            var txt = temp.getSession().getValue();
+            var lines = temp.session.doc.$lines;
+            var rows = lines.length;
+            var chars_per_row = $(previous).width()/8;
+            for (i=0;i<lines.length;i++){
+                var col = lines[i].length;
+                var additional = Math.ceil(col/chars_per_row)-1;
+                if (additional < 0) additional = 0;
+                rows += additional;
+            }
+            $(temp.container).height(rows*one_height);
+            temp.resize($(temp.container).width(), $(temp.container).height());
+
+            var data = [];
+            $.each(editors, function(_,editor){
+                data.push([parseInt(editor.container.id), editor.session.getValue(), 0]);
+            });
+			
+			//
+			
+			if (toggle){
+				viewUpdate(data);
+			}
+            if (!dont_update){
+                console.log('began update');
+                $.post(baseUrl+"/update/"+uid+"/"+temp.container.id+'/', {text:txt, code:0},
+                 function(data){
+				 
+                 },"json");
+            }
+        });
+
+
+        temp.setShowPrintMargin(false);
+        temp.renderer.setHScrollBarAlwaysVisible(false);
+        temp.renderer.setShowGutter(false);
+        //temp.setHighlightActiveLine(false);
+    }
+
+    function doPoll(){
+        $.get(baseUrl+"/get/"+uid, "",function(data){
+            dont_update = true;
+            doGUIUpdates(data);
+            dont_update = false;
+        },"json");
+        // do fake dopoll
+
+//        var data = [];
+//        $.each(editors, function(_,editor){
+//            console.log(editor);
+//            data.push([parseInt(editor.container.id), editor.session.getValue(), 0]);
+//        });
+//
+//        doGUIUpdates(data);
+    }
+
+    function viewUpdate(data){
+        var buf = '';
+        $.each(data, function(_,d){
+            var pid = d[0];
+            var txt = d[1];
+            var code = d[2];
+
+            buf += '\n\n'+txt;
+        })
+        var html = convertMarkdown(buf);
+        // parse latex
+        $("#view").html(html);
+
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub,"view"]);
+
+        $('#view code').addClass('prettyprint').click(function(){
+			var code = $(this).text();
+			$("#console").slideDown();
+			editor.session.setValue(code);
+		});
+		
+		
+        prettyPrint(); //Pretty print
+
+    }
+
+    function doGUIUpdates(data){
+        //alert(data);
+        //console.log(data);
+        //a_veiwUpdate(aceData[0]);
+
+        //Update Editor
+        //console.log(data);
+        $.each(data, function(_,d) {
+
+            //Update the ace text boxs here
+            //aces[pid].setValue(
+            //console.log(active.container.id, aces[''+pid].container.id);
+            var pid = parseInt(d[0]);
+            var txt = d[1];
+
+            if (aces[''+pid] == undefined){
+                addToAcesArray(pid);
+            }
+
+            if (active){
+                //console.log(active.container.id, aces[''+pid].container.id);
+                if (active.container.id != aces[''+pid].container.id && txt!=aces[''+pid].session.getValue()){
+					console.log("Changing "+pid);
+					console.log("Old:"+aces[''+pid].session.getValue());
+					console.log("New:"+txt);
+					console.log("===================");
+                    aces[''+pid].session.setValue(txt);
+                }
+            }else{
+				if (txt!=aces[''+pid].session.getValue()){
+					console.log("Changing "+pid);
+					console.log("Old:"+aces[''+pid].session.getValue());
+					console.log("New:"+txt);
+					console.log("===================");
+					aces[''+pid].session.setValue(txt);
+				}
+            }
+        });
+
+        viewUpdate(data);
+    }
+
+    function startPolling(){
+        var ticker = setInterval(doPoll, 5000);
+    }
+
+    $(document).ready( function() {
+
+        //addCell();
+
+        if (initial_data != false){
+            // populate first
+            dont_update = true;
+            doGUIUpdates(initial_data);
+            dont_update = false;
+        } else {
+            addCell();
+        }
+
+        //startPolling();
+
+        // document.onkeypress=function(event){
+        // var keyCode = ('which' in event) ? event.which : event.keyCode;
+        // if (keyCode==13&&event.ctrlKey){
+        // addCell();
+        // }
+        // }
+    });
+</script>
+
+<style type="text/css">
+	html{
+		overflow: hidden;
+	}
+
+    .webeq{
+        -border:#ccc solid 1px;
+
+        width:500px;
+        height:100px;
+        background:#fff;
+
+        box-shadow: 0px 0px 5px #ccf;
+        top:20px;
+    }
+
+    .eq{
+        -position: absolute;
+        display:none;
+        z-index: 99;
+        background:#fff;
+        opacity:0.8;
+    }
+
+    #demo{
+        font-size: 200%;
+    }
+
+    #view {
+		position: absolute;
+		left: 50%;
+    }
+
+    #latex-context2{
+        position: absolute;
+        display:none;
+        z-index: 99;
+        background:#fff;
+        opacity:0.8;
+        padding:5px 10px;
+        box-shadow: 0px 0px 5px #ccf;
+        cursor:pointer;
+    }
+
+    .MathJax_Display {
+        text-align: center;
+        margin: 1em 0em;
+        font-size: 20px !important;
+    }
+
+
+    #console{
+        position:fixed;
+        top:0px;
+        left:10px;
+        display:none;
+        width:98%;
+        z-index: 99;
+        height:300px;
+        background: #002;
+        opacity:0.9;
+
+        -moz-box-shadow: 0px 0px 10px #000;
+        -webkit-box-shadow: 0px 0px 10px #000;
+        box-shadow: 0px 0px 10px #000;
+    }
+
+    #editor {
+        position: absolute;
+        width: 50%;
+        height: 300px;
+        text-shadow: none;
+        background: #fff;
+    }
+
+    #interpreter{
+        position:absolute;
+        right:0px;
+        height:100%;
+        width:49%;
+        text-shadow: none;
+    }
+
+    #run{
+        position:absolute;
+        right:52%;
+        background: #000;
+        height:20px;
+        padding:10px;
+        background: #fff;
+        opacity: 0.4;
+        cursor:pointer;
+
+        z-index:99;
+
+        -moz-box-shadow: 0px 0px 10px #000;
+        -webkit-box-shadow: 0px 0px 10px #000;
+        box-shadow: 0px 0px 10px #000;
+    }
+	
+	.webtex{
+		display:none;
+	}
+
+</style>
+
+<style>
+    .editor{
+        width: 100%;
+        -height: 200px;
+        position: relative !important;
+    }
+
+    .ace_latex{
+        border-bottom:#ccc dotted 1px;
+        text-shadow: 0px 0px 3px #ccf;
+        border-radius: 2px;
+        color:#105CB6;
+    }
+
+    .latex-context{
+        position:absolute;
+        opacity:0.6;
+        display:none;
+    }
+
+    #top{
+        display:none;
+    }
+</style>
+
+
+
+
+
+</head>
+<div id="console" class="prefix1">
+    <div id="editor"></div>
+
+    <div id="interpreter"></div>
+    <div id="run"> RUN </div>
+</div>
+
+<div id="arrow"></div>
+<div id="intro"><span id="logo">omnipad</span></div>
+<div id="content">
+    <div id="edit">
+        <!-- 		<div id="editor">
+
+          </div> -->
+        <div id="top"></div>
+        <!-- <div class='eq'>
+              <div class='cancel' >X</div>
+              <canvas class="webeq">
+              </canvas>
+              <div id='demo'>
+
+              </div>
+          </div> -->
+
+        <!-- 	<div class='latex-context'>EQ</div> -->
+        <div id='latex-context2'></div>
+    </div>
+
+    <div id="view">
+        <!-- 	<button>Whats the text?</button> -->
+
+        </br>
+
+
+
+    </div>
+    <!-- 	<div >
+   </div> -->
+
+    <div class="demo">
+
+        <div id="foo" class='latex-context'>
+            <div class="icon icon-typing">
+                <div class="icon-comment-triangle"></div>
+                <div class="icon-typing-rectangle"></div>
+                <div class="icon-typing-circle-1"></div>
+                <div class="icon-typing-circle-2"></div>
+                <div class="icon-typing-circle-3"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!--DRAGGABLE-->
+    <div id="draggable" class="ui-widget-content eq">
+        <div id="closeeq"  style="margin-left: -20px;margin-top: -20px;">
+            <div class="icon icon-minus cancel">
+                <div class="icon-minus-circle"></div>
+                <div class="icon-minus-line"></div>
+            </div>
+        </div>
+
+        <canvas class="webeq" style="position:absolute; height:80px; width:695px;"></canvas>
+        <div id='demo' style="position:absolute; top:110px; margin: 0 auto; font-size: 200% !important;"></div>
+		
+		
+    </div>
+	
+	<canvas class="webtex" style="position:fixed; height:300px; width:92%; bottom:0px; left:20px; background:#fff; display:hidden"></canvas>
+	
+	<div id="bottom" style="position:fixed; bottom:-3px; left: 30px; border-radius: 4px; padding: 10px; background:#DB4C69; color:#fff; box-shadow: 0 0 5px #db4c69; cursor:pointer; font-weight:bold; opacity:0.8; z-index:2;">
+		SYNC
+	</div>
+
+</html>
