@@ -17,6 +17,7 @@ import urlparse
 urlparse.uses_netloc.append('postgres')
 urlparse.uses_netloc.append('mysql')
 
+TEMPLATE_DIRS = (os.path.abspath('./templates'),)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
@@ -55,6 +56,8 @@ try:
 
         if url.scheme == 'mysql':
             DATABASES['default']['ENGINE'] = 'django.db.backends.mysql'
+			
+        TEMPLATE_DIRS = (os.path.abspath('./notepad/templates'),)
 except Exception:
     print 'Unexpected error:', sys.exc_info()
 
@@ -154,7 +157,6 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'notepad.urls'
 
-TEMPLATE_DIRS = (os.path.abspath('./templates'),)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
