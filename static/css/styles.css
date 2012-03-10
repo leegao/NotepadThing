@@ -19,6 +19,7 @@ time, mark, audio, video {
 	margin: 0;
 	padding: 0;
 	border: 0;
+	font-size: 16px;
 	font-size: 100%;
 	-font-size: 14px;
 	-font: inherit;
@@ -66,7 +67,7 @@ code
 	border: 1px solid #CCC;
 	background-color: #F9F9F9;
 	padding: 0px 3px;
-	display: inline-block;
+	display: block;
 	border-radius: 3px;
 	border-style:dashed;
 	
@@ -122,7 +123,7 @@ body
 /* Draggable objects (latex panes) */
 #draggable {
 	display:none;
-	width: 500px;
+	width: 700px;
 	height: 100px;
 	-webkit-border-radius: 6px;
 	background: -webkit-gradient(linear,left top,left bottom,from(white),to(#EBEBEB));
