@@ -527,7 +527,9 @@
                     aces[''+pid].session.setValue(txt);
                 }
             }else{
-                aces[''+pid].session.setValue(txt);
+				if (txt!=aces[''+pid].session.getValue()){
+					aces[''+pid].session.setValue(txt);
+				}
             }
         });
 
