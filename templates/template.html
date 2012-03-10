@@ -28,6 +28,14 @@
 <script src="/static/src/mode-latex-uncompressed.js" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
+<script src="/static/js/jquery.terminal-0.4.7.js" type="text/javascript" charset="utf-8"></script>
+<link type="text/css" rel="stylesheet" href="/static/css/jquery.terminal.css"/>
+
+<script src="/static/src/mode-lua.js" type="text/javascript" charset="utf-8"></script>
+
+<script type="text/javascript" src="/static/js/lua.js"></script>
+<script type="text/javascript" src="/static/js/console.js"></script>
+
 <script>
     {% autoescape off %}
         initial_data = {{initial_data}}
@@ -348,7 +356,11 @@
             window.open('http://www.wolframalpha.com/input/?i='+escape(input));
         });
 
-
+        $('#edit').children().click(function(){
+            console.log('yay');
+            $('#edit').fadeIn('fast');
+            $("#view").fadeTo('fast',0.6);
+        });
 
         // $('.ace_latex').hover(function(){
         // // in between
@@ -361,7 +373,7 @@
 
 <script>
     var baseUrl = "";
-    var uid = 1;
+    var uid = {{ uid }};
     var numAces =0;
     var aces = {};
     var previous = "#top";
@@ -584,8 +596,59 @@
     .MathJax_Display {
         text-align: center;
         margin: 1em 0em;
-        font-size: 15px !important;
+        font-size: 20px !important;
     }
+
+
+    #console{
+        position:fixed;
+        top:0px;
+        left:10px;
+        display:none;
+        width:98%;
+        z-index: 99;
+        height:300px;
+        background: #002;
+        opacity:0.9;
+
+        -moz-box-shadow: 0px 0px 10px #000;
+        -webkit-box-shadow: 0px 0px 10px #000;
+        box-shadow: 0px 0px 10px #000;
+    }
+
+    #editor {
+        position: absolute;
+        width: 50%;
+        height: 300px;
+        text-shadow: none;
+        background: #fff;
+    }
+
+    #interpreter{
+        position:absolute;
+        right:0px;
+        height:100%;
+        width:49%;
+        text-shadow: none;
+    }
+
+    #run{
+        position:absolute;
+        right:52%;
+        background: #000;
+        height:20px;
+        padding:10px;
+        background: #fff;
+        opacity: 0.4;
+        cursor:pointer;
+
+        z-index:99;
+
+        -moz-box-shadow: 0px 0px 10px #000;
+        -webkit-box-shadow: 0px 0px 10px #000;
+        box-shadow: 0px 0px 10px #000;
+    }
+
 </style>
 
 <style>
@@ -618,6 +681,13 @@
 
 
 </head>
+
+<div id="console" class="prefix1">
+    <div id="editor"></div>
+
+    <div id="interpreter"></div>
+    <div id="run"> RUN </div>
+</div>
 
 <div id="arrow"></div>
 <div id="intro"><span id="logo">omnipad</span></div>
@@ -675,7 +745,7 @@
         </div>
 
         <canvas class="webeq" style="position:absolute; height:80px; width:495px;"></canvas>
-        <div id='demo' style="position:absolute; top:110px; margin-left:50%; margin-right:50%;"></div>
+        <div id='demo' style="position:absolute; top:110px; margin-left:50%; margin-right:50%; font-size: 200% !important;"></div>
     </div>
 
 </html>

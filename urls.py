@@ -13,6 +13,7 @@ urlpatterns = patterns('',
     url(r'^update/(?P<uid>\d+)/(?P<pid>\d+)/$', 'note.views.update'),
     url(r'^poll/(?P<uid>\d+)/(?P<pid>\d+)/$', 'note.views.poll'),
     url(r'^index','note.views.index'),
+    url(r'^(?P<uid>\d+)/$','note.views.page'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

@@ -5,6 +5,19 @@ from django.http import HttpResponse
 from models import *
 import json
 from django.views.decorators.csrf import csrf_exempt
+import datetime
+
+@csrf_exempt
+def page(request, uid):
+    initial_data = Cell.objects.filter(document__id = uid)
+    if not initial_data:
+        # create uid
+        doc = Document(id=uid)
+        doc.pub_date = datetime.datetime.now()
+        doc.save()
+        initial_data = []
+    initial_data = json.dumps([[dat.pid(),dat.raw_text, 0] for dat in initial_data])
+    return render_to_response('template.html', locals())
 
 @csrf_exempt
 def index(request):
