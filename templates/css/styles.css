@@ -56,6 +56,23 @@ h2 {font-size:24px;font-weight: bold;border-bottom: 1px solid #CCC;margin-bottom
 p {margin: 15px 0;font-size: 15px;line-height: 1.6;}
 ul {list-style-type: disc;}
 li {font-size: 100%;line-height: 1.6;}
+code
+{
+	font-family: Courier;
+	-webkit-background-clip: padding-box;
+	-webkit-border-radius: 3px;
+	background-clip: padding-box;
+	border: 1px solid #CCC;
+	background-color: #F9F9F9;
+	padding: 0px 3px;
+	display: inline-block;
+	border-radius: 3px;
+	border-style:dashed;
+	
+	-moz-box-shadow: 0 0 5px #888;
+	-webkit-box-shadow: 0 0 5px#888;
+	box-shadow: 0 0 5px #888;
+}
 
 body
 {
@@ -72,9 +89,9 @@ body
 	-webkit-border-bottom-left-radius: 6px;
 	-webkit-border-bottom-right-radius: 6px;
 	-webkit-box-shadow: 0 3px 6px rgba(0,0,0,0.25);
-	padding: 90px 20px 20px;
+	padding: 40px 20px 20px;
 	background: -webkit-gradient(linear,left top,left bottom,from(white),to(#EBEBEB));
-	height: 100px;
+	height: 80px;
 	display:none;
 	width: 560px;
 	left: 50%;
@@ -128,6 +145,7 @@ body
 
 #edit
 {
+	overflow: auto;
 	margin-top: 20px;
 	margin-right: 10px;
 	margin-bottom: 20px;
@@ -146,6 +164,7 @@ body
 
 #view
 {
+	overflow: auto;
 	margin-top: 20px;
 	margin-right: 20px;
 	margin-bottom: 20px;

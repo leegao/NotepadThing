@@ -12,8 +12,11 @@ $(document).ready(function(){
 		$("#intro").slideToggle("slow");
 	});
 	
+	//Convert to markdown
 	$("button").click(function(){
 		$("#view").html(convertMarkdown($("#textarea").val()));
+		$('#view code').addClass('prettyprint');
+		prettyPrint(); //Pretty print
 	});
 	
 	//Draggable stuffs
