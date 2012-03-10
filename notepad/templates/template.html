@@ -505,7 +505,7 @@
 
 		//var buffer = [];
         temp.getSession().on('change', function(){
-            var txt = temp.getSession().getValue();
+            var txt = escape(temp.getSession().getValue());
             var lines = temp.session.doc.$lines;
             var rows = lines.length;
             var chars_per_row = $(previous).width()/8;
