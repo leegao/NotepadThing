@@ -12,7 +12,7 @@ class Document(models.Model):
 
     def cells(self):
         l = []
-        for cell in Cell.objects.filter(document=self):
+        for cell in Cell.objects.filter(document=self).order_by('id'):
             l.append((cell.pid(), cell.raw_text, cell.code))
         return l
 
