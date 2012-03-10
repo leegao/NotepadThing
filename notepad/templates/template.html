@@ -523,7 +523,11 @@
 
             if (active){
                 //console.log(active.container.id, aces[''+pid].container.id);
-                if (active.container.id != aces[''+pid].container.id){
+                if (active.container.id != aces[''+pid].container.id && txt!=aces[''+pid].session.getValue()){
+					console.log("Changing "+id);
+					console.log("Old:"+aces[''+pid].session.getValue());
+					console.log("New:"+txt);
+					console.log("===================");
                     aces[''+pid].session.setValue(txt);
                 }
             }else{
