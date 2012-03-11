@@ -505,7 +505,7 @@
 
 		//var buffer = [];
         temp.getSession().on('change', function(){
-            var txt = escape(temp.getSession().getValue());
+            var txt = (temp.getSession().getValue());
             var lines = temp.session.doc.$lines;
             var rows = lines.length;
             var chars_per_row = $(previous).width()/8;
@@ -568,7 +568,7 @@
             var txt = d[1];
             var code = d[2];
 
-            buf += '\n\n'+txt;
+            buf += '\n\n'+txt.replace(/(<([^>]+)>)/ig,"");
         })
         var html = convertMarkdown(buf);
         // parse latex
@@ -609,18 +609,18 @@
             if (active){
                 //console.log(active.container.id, aces[''+pid].container.id);
                 if (active.container.id != aces[''+pid].container.id && txt!=aces[''+pid].session.getValue()){
-					console.log("Changing "+pid);
-					console.log("Old:"+aces[''+pid].session.getValue());
-					console.log("New:"+txt);
-					console.log("===================");
+					//console.log("Changing "+pid);
+					//console.log("Old:"+aces[''+pid].session.getValue());
+					//console.log("New:"+txt);
+					//console.log("===================");
                     aces[''+pid].session.setValue(txt);
                 }
             }else{
 				if (txt!=aces[''+pid].session.getValue()){
-					console.log("Changing "+pid);
-					console.log("Old:"+aces[''+pid].session.getValue());
-					console.log("New:"+txt);
-					console.log("===================");
+					//console.log("Changing "+pid);
+					//console.log("Old:"+aces[''+pid].session.getValue());
+					//console.log("New:"+txt);
+					//console.log("===================");
 					aces[''+pid].session.setValue(txt);
 				}
             }
