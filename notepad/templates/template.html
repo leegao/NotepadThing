@@ -528,7 +528,7 @@
 			if (toggle){
 				viewUpdate(data);
 			}
-            if (!dont_update){
+            if (!dont_update&&uid!=1){
                 console.log('began update');
                 $.post(baseUrl+"/update/"+uid+"/"+temp.container.id+'/', {text:txt, code:0},
                  function(data){
